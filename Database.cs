@@ -1,13 +1,13 @@
-﻿using Microsoft.Data.SqlClient;
-using System.Data;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
 
 /// <summary>
 /// 封裝資料庫的操作
 /// </summary>
 public class Database
 {
-  const string orderDateSelectSql = """
-      select [OrderDate]
+  const string orderSelectSql = """
+      select Id = [OrderId], Date = [OrderDate]
       from[Orders]
       where[OrderId] = @orderId
     """;
@@ -48,11 +48,10 @@ public class Database
     _connectString = connectionString;
 
     // 初始化Log表格
-    using var connection = new SqlConnection(connectionString);
-    connection.Open();
-
-    using var insertLogQuery = new SqlCommand(createLogTableSql, connection);
-    insertLogQuery.ExecuteNonQuery();
+    using (var connection = new SqlConnection(_connectString))
+    {
+      connection.Execute(createLogTableSql);
+    }
   }
 
   /// <summary>
@@ -62,31 +61,15 @@ public class Database
   /// <returns>編號對應的訂單，null代表沒有這筆訂單</returns>
   public Order? GetOrder(int orderId)
   {
-    using var connection = new SqlConnection(_connectString);
-    connection.Open();
-
-    using var orderProductQuery = new SqlCommand(orderProductSelectSql, connection);
-    using var orderQuery = new SqlCommand(orderDateSelectSql, connection);
-    orderProductQuery.Parameters.Add("@orderId", SqlDbType.Int).Value = orderId;
-    orderQuery.Parameters.Add("@orderId", SqlDbType.Int).Value = orderId;
-
-    // 取得訂單的商品列表
-    using SqlDataReader orderProductReader = orderProductQuery.ExecuteReader();
-    List<OrderProduct> products = new List<OrderProduct>();
-    while (orderProductReader.Read())
+    using (var connection = new SqlConnection(_connectString))
     {
-      products.Add(new(orderProductReader.GetInt32(0), orderProductReader.GetString(1), orderProductReader.GetInt16(2), orderProductReader.GetDecimal(3)));
-    }
-    orderProductReader.Close();
-
-    // 取得訂單日期
-    DateTime? orderTime = (DateTime?)orderQuery.ExecuteScalar();
-    if (orderTime is not null)
-    {
-      Order order = new(orderId, (DateTime)orderTime, products);
+      Order? order = connection.QuerySingleOrDefault<Order>(orderSelectSql, new { orderId });
+      if (order is not null)
+      {
+        order.productList = connection.Query<OrderProduct>(orderProductSelectSql, new { orderId }).ToList();
+      }
       return order;
     }
-    return null;
   }
 
   /// <summary>
@@ -96,12 +79,9 @@ public class Database
   /// <param name="queryTime">查詢時間</param>
   public void InsertLog(int orderId, DateTime queryTime)
   {
-    using var connection = new SqlConnection(_connectString);
-    connection.Open();
-
-    using var insertLogQuery = new SqlCommand(insertLogSql, connection);
-    insertLogQuery.Parameters.Add("@orderId", SqlDbType.Int).Value = orderId;
-    insertLogQuery.Parameters.Add("@queryTime", SqlDbType.DateTime).Value = queryTime;
-    insertLogQuery.ExecuteNonQuery();
+    using (var connection = new SqlConnection(_connectString))
+    {
+      connection.Execute(insertLogSql, new { orderId, queryTime });
+    }
   }
 }
