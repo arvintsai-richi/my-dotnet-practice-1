@@ -37,7 +37,7 @@ public class Database
         values (@orderId, @queryTime);
         """;
 
-  private string _connectString;
+  private readonly string _connectString;
 
   /// <summary>
   /// 初始化：使用 connectionString 連接資料庫
@@ -72,7 +72,7 @@ public class Database
 
     // 取得訂單的商品列表
     using SqlDataReader orderProductReader = orderProductQuery.ExecuteReader();
-    List<OrderProduct> products = new List<OrderProduct>();
+    List<OrderProduct> products = [];
     while (orderProductReader.Read())
     {
       products.Add(new(orderProductReader.GetInt32(0), orderProductReader.GetString(1), orderProductReader.GetInt16(2), orderProductReader.GetDecimal(3)));
