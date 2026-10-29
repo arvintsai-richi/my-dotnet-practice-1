@@ -36,7 +36,8 @@ public class Database
         insert into dbo.OrderQueryLogs (OrderId, QueryTime)
         values (@orderId, @queryTime);
         """;
-  private SqlConnection _connection;
+
+  private string _connectString;
 
   /// <summary>
   /// 初始化：使用 connectionString 連接資料庫
@@ -44,12 +45,13 @@ public class Database
   /// <param name="connectionString">資料庫連接字串</param>
   public Database(string connectionString)
   {
-    _connection = new SqlConnection(connectionString);
-    _connection.Open();
+    _connectString = connectionString;
 
     // 初始化Log表格
+    using var connection = new SqlConnection(connectionString);
+    connection.Open();
 
-    using var insertLogQuery = new SqlCommand(createLogTableSql, _connection);
+    using var insertLogQuery = new SqlCommand(createLogTableSql, connection);
     insertLogQuery.ExecuteNonQuery();
   }
 
@@ -60,8 +62,11 @@ public class Database
   /// <returns>編號對應的訂單，null代表沒有這筆訂單</returns>
   public Order? GetOrder(int orderId)
   {
-    using var orderProductQuery = new SqlCommand(orderProductSelectSql, _connection);
-    using var orderQuery = new SqlCommand(orderDateSelectSql, _connection);
+    using var connection = new SqlConnection(_connectString);
+    connection.Open();
+
+    using var orderProductQuery = new SqlCommand(orderProductSelectSql, connection);
+    using var orderQuery = new SqlCommand(orderDateSelectSql, connection);
     orderProductQuery.Parameters.Add("@orderId", SqlDbType.Int).Value = orderId;
     orderQuery.Parameters.Add("@orderId", SqlDbType.Int).Value = orderId;
 
@@ -91,7 +96,10 @@ public class Database
   /// <param name="queryTime">查詢時間</param>
   public void InsertLog(int orderId, DateTime queryTime)
   {
-    using var insertLogQuery = new SqlCommand(insertLogSql, _connection);
+    using var connection = new SqlConnection(_connectString);
+    connection.Open();
+
+    using var insertLogQuery = new SqlCommand(insertLogSql, connection);
     insertLogQuery.Parameters.Add("@orderId", SqlDbType.Int).Value = orderId;
     insertLogQuery.Parameters.Add("@queryTime", SqlDbType.DateTime).Value = queryTime;
     insertLogQuery.ExecuteNonQuery();
