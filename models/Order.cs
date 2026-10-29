@@ -9,40 +9,32 @@ public class Order
   /// 訂單編號
   /// </summary>
   [JsonPropertyName("訂單編號")]
-  public int id { get; }
+  public int Id { get; set; }
   /// <summary>
   /// 訂購日期 (字串型態)
   /// </summary>
   [JsonPropertyName("訂購日期")]
-  public string dateString => date.ToString("yyyy/M/d");
+  public string DateString => Date.ToString("yyyy/M/d");
   /// <summary>
   /// 訂購日期 (日期型態)
   /// </summary>
   [JsonIgnore]
-  public DateTime date { get; }
+  public DateTime Date { get; set; }
   /// <summary>
   /// 訂購金額
   /// </summary>
   [JsonPropertyName("訂購金額")]
-  public decimal total { get; private set; }
+  public decimal Total { get; private set; }
   /// <summary>
   /// 訂購商品清單
   /// </summary>
   [JsonPropertyName("訂購商品清單")]
-  public List<OrderProduct> productList
+  public List<OrderProduct> ProductList
   {
     get; set
     {
-      total = value.Sum(product => product.quantity * product.unitPrice);
+      Total = value.Sum(product => product.Quantity * product.UnitPrice);
       field = value;
     }
-  }
-
-  /// <summary>
-  /// 初始化變數
-  /// </summary>
-  public Order()
-  {
-    productList = new();
-  }
+  } = [];
 }

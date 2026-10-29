@@ -9,20 +9,20 @@ public class OrderProduct
   /// 商品編號
   /// </summary>
   [JsonPropertyName("商品編號")]
-  public int productId { get; }
+  public int ProductId { get; set; }
   /// <summary>
   /// 商品名稱
   /// </summary>
   [JsonPropertyName("商品名稱")]
-  public string productName { get; }
+  public string ProductName { get; set; } = "";
   /// <summary>
   /// 購買數量
   /// </summary>
   [JsonPropertyName("購買數量")]
-  public int quantity { get; }
+  public int Quantity { get; set; }
   /// <summary>
   /// 單價
   /// </summary>
   [JsonPropertyName("單價")]
-  public decimal unitPrice { get; }
+  public decimal UnitPrice { get; set; }
 }

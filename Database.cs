@@ -37,7 +37,7 @@ public class Database
         values (@orderId, @queryTime);
         """;
 
-  private string _connectString;
+  private readonly string _connectString;
 
   /// <summary>
   /// 初始化：使用 connectionString 連接資料庫
@@ -48,10 +48,8 @@ public class Database
     _connectString = connectionString;
 
     // 初始化Log表格
-    using (var connection = new SqlConnection(_connectString))
-    {
-      connection.Execute(createLogTableSql);
-    }
+    using var connection = new SqlConnection(_connectString);
+    connection.Execute(createLogTableSql);
   }
 
   /// <summary>
@@ -61,15 +59,10 @@ public class Database
   /// <returns>編號對應的訂單，null代表沒有這筆訂單</returns>
   public Order? GetOrder(int orderId)
   {
-    using (var connection = new SqlConnection(_connectString))
-    {
-      Order? order = connection.QuerySingleOrDefault<Order>(orderSelectSql, new { orderId });
-      if (order is not null)
-      {
-        order.productList = connection.Query<OrderProduct>(orderProductSelectSql, new { orderId }).ToList();
-      }
-      return order;
-    }
+    using var connection = new SqlConnection(_connectString);
+    Order? order = connection.QuerySingleOrDefault<Order>(orderSelectSql, new { orderId });
+    order?.ProductList = [.. connection.Query<OrderProduct>(orderProductSelectSql, new { orderId })];
+    return order;
   }
 
   /// <summary>
@@ -79,9 +72,7 @@ public class Database
   /// <param name="queryTime">查詢時間</param>
   public void InsertLog(int orderId, DateTime queryTime)
   {
-    using (var connection = new SqlConnection(_connectString))
-    {
-      connection.Execute(insertLogSql, new { orderId, queryTime });
-    }
+    using var connection = new SqlConnection(_connectString);
+    connection.Execute(insertLogSql, new { orderId, queryTime });
   }
 }
