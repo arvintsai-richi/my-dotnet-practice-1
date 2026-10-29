@@ -4,7 +4,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Unicode;
 
 try
 {
@@ -41,13 +40,10 @@ try
         // 寫log
         db.InsertLog(orderId, DateTime.UtcNow);
 
-        // 讓 JsonSerializer 正常顯示中文的設定
+        // 讓 JsonSerializer 正常顯示各種文字的設定
         var jsonSerializerOption = new JsonSerializerOptions
         {
-          Encoder = JavaScriptEncoder.Create(
-            UnicodeRanges.BasicLatin,
-            UnicodeRanges.CjkUnifiedIdeographs
-          )
+          Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
         Console.WriteLine($"訂單明細如下：{JsonSerializer.Serialize(order, jsonSerializerOption)}");
       }
