@@ -24,17 +24,10 @@ public class Order
   /// 訂購金額
   /// </summary>
   [JsonPropertyName("訂購金額")]
-  public decimal Total { get; private set; }
+  public decimal Total => ProductList.Sum(product => product.Quantity * product.UnitPrice);
   /// <summary>
   /// 訂購商品清單
   /// </summary>
   [JsonPropertyName("訂購商品清單")]
-  public List<OrderProduct> ProductList
-  {
-    get; set
-    {
-      Total = value.Sum(product => product.Quantity * product.UnitPrice);
-      field = value;
-    }
-  } = [];
+  public List<OrderProduct> ProductList { get; set; } = [];
 }
